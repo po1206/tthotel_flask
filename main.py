@@ -131,17 +131,23 @@ def getRecords():
     url = BASE_URL + "v3/lockRecord/list"
     lockId = request.args.get('lockId')
     pageNo = request.args.get('page', default=0)
+    startDate = int(request.args.get('startDate', default=-1))
+    endDate = int(request.args.get('endDate', default=-1))
 
-    record_response = requests.get(url, params={
+    params={
         'clientId' : CLIENT_ID,
         'accessToken': ACCESS_TOKEN,
         'lockId': lockId,
         'pageNo': int(pageNo) + 1,
         'pageSize': 20,
         'date': int(cur_time) * 1000
-    })
+    }
+    if startDate != -1 and endDate != -1:
+        params["startDate"] = startDate
+        params["endDate"] = endDate
+    print(f"{params}")
+    record_response = requests.get(url, params=params)
     record_data = json.loads(record_response.text)
-
     print(f"{record_data}")
     data = []
 

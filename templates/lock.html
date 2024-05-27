@@ -9,6 +9,7 @@
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
     <!-- Date Range Picker CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
     <title>Lock</title>
 </head>
 
@@ -26,7 +27,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-10">
-                        <input class="form-control mr-sm-2" type="text" id="daterange" name="daterange">
+                        <input class="form-control mr-sm-2" type="text" id="daterange" name="daterange" value="">
                     </div>
                     <div id="table"></div>
                 </div>
@@ -117,18 +118,37 @@
 <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 <script type="text/javascript">
     var _lockId = -1;
+    var startDate = -1;
+    var endDate = -1;
+    let grid;
 
+    var clearFilter = function() {
+        startDate = -1;
+        endDate = -1;        
+        $('#daterange').val('');
+    }
+    
     $(document).ready(function() {
         $('#daterange').daterangepicker({
             opens: 'right'
         }, function(start, end, label) {
-            console.log(start, end)
-            console.log("A new date selection was made: " + start.date().timestamp() + ' to ' + end.date().timestamp());
         });
+        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
+            //do something, like clearing an input
+            clearFilter();
+            grid.forceRender();
+        });
+        $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+            startDate = new Date(picker.startDate.format('YYYY-MM-DD')).getTime();
+            endDate =  new Date(picker.endDate.format('YYYY-MM-DD')).getTime();
+            grid.forceRender();
+        });
+        clearFilter();
     })
+
     var loadRecord = function (lockId) {
         _lockId = lockId;
-        new gridjs.Grid({
+        grid = new gridjs.Grid({
             fixedHeader: true,
             height: '400px',
             columns: [
@@ -147,7 +167,7 @@
             pagination: {
                 limit: 20,
                 server: {
-                    url: (prev, page, limit) => '/lock/data?lockId=' + lockId + '&page=' + page
+                    url: (prev, page, limit) => '/lock/data?lockId=' + lockId + '&page=' + page + '&startDate=' + startDate + '&endDate=' + endDate
                 }
             },
             style: {
