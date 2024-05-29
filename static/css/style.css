@@ -6,5 +6,9 @@ h1 {
 }
 
 .gridjs-wrapper {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+}
+
+.board {
+    padding: 15px;
 }
