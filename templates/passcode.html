@@ -7,7 +7,58 @@
     <div class="page-header">
         <h2> Passcode </h2>
     </div>
+    <div class="row" style="margin-left: 0px;">
+        <div class="form-group col-md-2 flex">
+            <label for="owner" class="col-form-label">Owner:</label>
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="owner" value="">
+            </div>
+        </div>
+        <div class="form-group col-md-2 flex">
+            <label for="accessto" class="col-form-label">Access To:</label>
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="accessto" value="">
+            </div>
+        </div>
+        <div class="form-group col-md-4 flex">
+            <label for="daterange" class="col-form-label">Validity:</label>
+            <div class="col-sm-8">
+                <input class="form-control" type="text" id="daterange" name="daterange" value="">
+            </div>
+        </div>
+        <div class="form-group col-md-3 flex">
+            <button class="btn btn-primary mr-sm-2" onclick="javascript:onSearch();">Search</button>
+            <button class="btn btn-light mr-sm-2" onclick="javascript:onRefresh();">Refresh</button>
+            <button class="btn btn-primary mr-sm-2" onclick="javascript:onCreate();">Create</button>
+        </div>
+    </div>
     <div id="dataGrid"></div>
+</div>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" id="openModal" style="display: none;">Open Modal</button>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog" role="document" style="max-width: 800px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Generate temporary passcode</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Temporary PIN code won't change the room status</h5>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Password</label>
+                    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block scripts %}
@@ -16,8 +67,28 @@
 let startDate = -1;
 let endDate = -1;
 
+var clearFilter = function() {
+    startDate = -1;
+    endDate = -1;        
+    $('#daterange').val('');
+    $('#owner').val('');
+    $('#accessto').val('');
+}
+
+var onSearch = function () {
+    grid.updateConfig({
+        server: {
+            url: '/passcode/data?startDate=' + startDate + '&endDate=' + endDate + '&owner=' + $('#owner').val() + '&accessto=' + $('#accessto').val(),
+            then: results => results
+        }
+    }).forceRender();
+}
+
+var onRefresh = function() {
+    clearFilter();
+    onSearch();
+}
 $(document).ready(function() {
-    console.log("ddd");
     grid = new gridjs.Grid({
         columns: [
             { id: 'passcode', name: 'Passcode', width: '140px'},
@@ -25,7 +96,6 @@ $(document).ready(function() {
             { id: 'status', name: 'Status', width: '140px'},
             { id: 'accessto', name: 'Access to', width: '140px'},
             { id: 'validity', name: 'Validity', width: '140px'},
-            { id: 'createdby', name: 'Createdby', width: '140px'},
             { id: 'operation', name: 'Operation', width: '140px'},
         ],
         server: {
@@ -55,6 +125,21 @@ $(document).ready(function() {
             }
         }
     }).render(document.getElementById('dataGrid'));
+
+    $('#daterange').daterangepicker({
+            opens: 'left'
+        }, function(start, end, label) {
+    });
+    $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
+        //do something, like clearing an input
+        clearFilter();
+        grid.forceRender();
+    });
+    $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+        startDate = new Date(picker.startDate.format('YYYY-MM-DD')).getTime();
+        endDate =  new Date(picker.endDate.format('YYYY-MM-DD')).getTime();
+    });
+    clearFilter();
 })
 </script>
 {% endblock %}

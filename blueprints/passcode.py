@@ -17,6 +17,6 @@ def data():
     endDate = request.args.get('endDate', default=-1)
     accessto = request.args.get('accessto', default='')
     
-    result = getPasscode( owner, startDate, endDate, accessto)
+    result = getPasscode( owner, int(startDate), int(endDate), accessto)
     
     return jsonify(result)

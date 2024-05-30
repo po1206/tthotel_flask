@@ -12,3 +12,8 @@ h1 {
 .board {
     padding: 15px;
 }
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}

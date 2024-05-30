@@ -83,7 +83,7 @@ load_dotenv(dotenv_path)
 ACCESS_TOKEN = "2722dfdc850c256870d19f319ca002dd"
 
 def displayTime(timestamp):
-    return time.strftime('%Y.%m.%d %H:%M', time.localtime(timestamp / 1000))
+    return time.strftime('%Y.%m.%d %H:%M', time.localtime(int(timestamp) / 1000))
 
 def getAccessToken() :
     response = requests.post(url=BASE_URL + "oauth2/token", data = {

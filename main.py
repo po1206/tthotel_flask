@@ -3,12 +3,13 @@ from blueprints.lock import lock_bp
 from blueprints.passcode import passcode_bp
 from blueprints.users import users_bp
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password1206@localhost/tthotel'
 db = SQLAlchemy(app)
 
-
+print(f"{int(datetime.now().timestamp()) * 1000}")
 @app.route('/')
 def index() :
     return render_template('index.html')

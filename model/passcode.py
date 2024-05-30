@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from main import db
 from blueprints.constant import displayTime
+from datetime import datetime
 
 class Passcode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,14 +15,23 @@ class Passcode(db.Model):
     def __repr__(self):
         return '<Passcode %r>' % self.passcode
     
-    def serialize(self):
+    def serialize(self, timestamp):
+        status = ''
+        if timestamp >= self.startDate:
+            if timestamp <= self.endDate:
+                status = 'In use'
+            else:
+                status = 'Expired'
+        else:
+            status = 'In use'
+
         return {
             'id': self.id,
             'owner': self.owner,
             'passcode': self.passcode,
-            'startDate': displayTime(self.startDate),
-            'endDate': displayTime(self.endDate),
-            'sendDate': displayTime(self.sendDate),
+            'status': status,  
+            'validity': displayTime(self.startDate) + '~' + displayTime(self.endDate),
+            'createDate': displayTime(self.sendDate),
             'accessto': self.accessto
         }
 
@@ -35,5 +45,9 @@ def getPasscode(owner, startDate, endDate, accessto):
     if accessto != '':
         query = query.filter(Passcode.accessto.like('${accessto}%'))
     data = query.order_by(Passcode.id).all()
-    serialized_data = [item.serialize() for item in data]
-    return serialized_data
+    
+    serialized_data = [item.serialize(datetime.now().timestamp()) for item in data]
+    return {
+        'data' : serialized_data,
+        'total' : serialized_data.__len__()
+    }
